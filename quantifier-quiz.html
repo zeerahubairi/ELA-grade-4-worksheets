@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quantifier Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f8ff; margin: 0; padding: 0; }
+    #quiz-container { background: white; padding: 2rem; margin: 5vh auto; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.2); max-width: 700px; }
+    h2 { margin-bottom: 2rem; }
+    .option-btn { display: inline-block; margin: 1rem; padding: 1rem 2rem; font-size: 1.2rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; }
+    .correct { background-color: #4CAF50; color: white; }
+    .wrong { background-color: #f44336; color: white; }
+    #next-btn { margin-top: 2rem; padding: 0.8rem 2rem; font-size: 1rem; cursor: pointer; }
+    #completion { display: none; font-size: 1.5rem; color: green; margin-top: 20px; }
+    #score-display { font-size: 1rem; margin-bottom: 1rem; }
+    .progress-container { width: 100%; background-color: #ddd; border-radius: 20px; margin: 1rem 0; height: 20px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background-color: #4CAF50; transition: width 0.4s ease; }
+  </style>
+</head>
+<body>
+
+<div id="quiz-container">
+  <div id="score-display">Score: 0 / 0</div>
+  <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+  <h2 id="question">Loading...</h2>
+  <div><button id="option1" class="option-btn"></button><button id="option2" class="option-btn"></button></div>
+  <button id="next-btn">Next</button>
+  <div id="completion">🎉 Quiz Completed! Great job! 🎉</div>
+</div>
+
+<script>
+  const quizData = [['They had ______ fun at the carnival.', 'a lot of', 'many', 'a lot of'],
+    ['Do you have ______ pencils I could borrow?', 'many', 'any', 'any'],
+    ['She brought ______ sandwiches to share.', 'few', 'some', 'some'],
+    ['He made ______ mistakes on the test.', 'little', 'few', 'few'],
+    ['I only need ______ minutes to get ready.', 'some', 'few', 'few'],
+    ['I have ______ cookies in my bag.', 'little', 'a few', 'a few'],
+    ['There isn’t ______ sugar left in the bowl.', 'much', 'many', 'much'],
+    ['We only found ______ apples at the orchard.', 'a few', 'much', 'a few'],
+    ['We need ______ help to finish the project.', 'some', 'few', 'some'],
+    ['______ of the cake is left after lunch.', 'most', 'little', 'most'],
+    ['Are there ______ bananas left?', 'any', 'many', 'any'],
+    ['He has ______ homework tonight.', 'a little', 'few', 'a little'],
+    ['______ noise came from the kitchen.', 'several', 'much', 'much'],
+    ['There was ______ hope of finding the keys.', 'little', 'few', 'little'],
+    ['They caught ______ fish on the trip.', 'some', 'few', 'some'],
+    ['We invited ______ friends to the picnic.', 'some', 'few', 'some'],
+    ['There were ______ chairs left in the hall.', 'few', 'little', 'few'],
+    ['They had ______ interest in the subject.', 'little', 'several', 'little'],
+    ['______ of the paint had dried overnight.', 'Most', 'Many', 'Most'],
+    ['They didn’t have ______ energy after the hike.', 'much', 'many', 'much'],
+    ['She didn’t eat ______ vegetables.', 'several', 'much', 'much'],
+    ['______ of the juice had spilled on the table.', 'little', 'most', 'most'],
+    ['______ children were playing outside.', 'Many', 'Much', 'Many'],
+    ['She has ______ books to read during summer.', 'several', 'much', 'several'],
+    ["He doesn't have ______ patience with noisy people.", 'many', 'much', 'much'],
+    ['Did you see ______ of the players arrive?', 'any', 'many', 'any'],
+    ['We brought ______ snacks for the road.', 'several', 'little', 'several'],
+    ['He read ______ books over the summer.', 'many', 'any', 'many'],
+    ['We didn’t have ______ time to finish the game.', 'much', 'many', 'much'],
+    ['There were ______ sandwiches left on the tray.', 'few', 'much', 'few'],
+    ['______ of the pizza was eaten.', 'Most', 'Few', 'Most'],
+    ['We found a little time to practice before the test.', 'a little', 'much', 'a little'],
+    ['______ milk is left in the fridge?', 'How much', 'How many', 'How much'],
+    ['______ students knew the answer.', 'few', 'much', 'few'],
+    ['I found ______ coins under the couch.', 'a few', 'little', 'a few'],
+    ['He had ______ toys when he was a child.', 'few', 'little', 'few'],
+    ['There are ______ ants near the trash bin.', 'any', 'many', 'many'],
+    ['We saw ______ birds near the lake.', 'a few', 'little', 'a few'],
+    ['I have ______ pencils, but none are sharp.', 'few', 'some', 'few'],
+    ['______ students passed the test.', 'Many', 'Much', 'Many']];
+
+  let currentQuestion = 0, score = 0, attempted = 0;
+  const questionEl = document.getElementById("question"),
+        option1 = document.getElementById("option1"),
+        option2 = document.getElementById("option2"),
+        nextBtn = document.getElementById("next-btn"),
+        scoreDisplay = document.getElementById("score-display"),
+        progressBar = document.getElementById("progress-bar"),
+        completionEl = document.getElementById("completion");
+
+  function loadQuestion() {
+    resetButtons();
+    updateScore();
+    updateProgress();
+
+    if (currentQuestion >= quizData.length) {
+      questionEl.style.display = "none";
+      option1.style.display = "none";
+      option2.style.display = "none";
+      nextBtn.style.display = "none";
+      completionEl.style.display = "block";
+      return;
+    }
+
+    const [text, opt1, opt2, correct] = quizData[currentQuestion];
+    questionEl.textContent = `${currentQuestion + 1}. ${text}`;
+    option1.textContent = opt1;
+    option2.textContent = opt2;
+
+    option1.onclick = () => checkAnswer(opt1, correct, option1);
+    option2.onclick = () => checkAnswer(opt2, correct, option2);
+  }
+
+  function checkAnswer(selected, correct, button) {
+    attempted++;
+    if (selected === correct) { score++; button.classList.add("correct"); }
+    else { button.classList.add("wrong"); }
+    option1.disabled = true;
+    option2.disabled = true;
+    updateScore();
+  }
+
+  function resetButtons() {
+    option1.disabled = false;
+    option2.disabled = false;
+    option1.className = "option-btn";
+    option2.className = "option-btn";
+  }
+
+  function updateScore() { scoreDisplay.textContent = `Score: ${score} / ${attempted}`; }
+  function updateProgress() { progressBar.style.width = Math.floor((currentQuestion / quizData.length) * 100) + "%"; }
+  nextBtn.onclick = () => { currentQuestion++; loadQuestion(); };
+  loadQuestion();
+</script>
+</body>
+</html>

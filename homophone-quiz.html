@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Homophone Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    #quiz-container {
+      background: white;
+      padding: 2rem;
+      margin: 5vh auto;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      max-width: 700px;
+    }
+
+    h2 {
+      margin-bottom: 2rem;
+    }
+
+    .option-btn {
+      display: inline-block;
+      margin: 1rem;
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .correct {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .wrong {
+      background-color: #f44336;
+      color: white;
+    }
+
+    #next-btn {
+      margin-top: 2rem;
+      padding: 0.8rem 2rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #completion {
+      display: none;
+      font-size: 1.5rem;
+      color: green;
+      margin-top: 20px;
+    }
+
+    #score-display {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .progress-container {
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 20px;
+      margin: 1rem 0;
+      height: 20px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #4CAF50;
+      transition: width 0.4s ease;
+    }
+  </style>
+</head>
+<body>
+
+<div id="quiz-container">
+  <div id="score-display">Score: 0 / 0</div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+  <h2 id="question">Loading...</h2>
+  <div>
+    <button id="option1" class="option-btn"></button>
+    <button id="option2" class="option-btn"></button>
+  </div>
+  <button id="next-btn">Next</button>
+  <div id="completion">🎉 Quiz Completed! Great job! 🎉</div>
+</div>
+
+<script>
+  const quizData = [['The bear couldn’t ______ the cold weather.', 'bare', 'bear', 'bear'],
+  ['She proudly wore her silver ______.', 'medal', 'metal', 'medal'],
+  ['The sky was clear and ______ this morning.', 'blue', 'blew', 'blue'],
+  ['Let’s hope for ______ between the two teams.', 'peace', 'piece', 'peace'],
+  ['His pants were too tight around the ______.', 'waist', 'waste', 'waist'],
+  ['She put the roses in a ______ vase.', 'flower', 'flour', 'flower'],
+  ['She does not eat red ______.', 'meat', 'meet', 'meat'],
+  ['Her ______ is learning to play the drums.', 'sun', 'son', 'son'],
+  ['He ate the ______ pizza by himself!', 'hole', 'whole', 'whole'],
+  ['He brought ______ sandwiches for the group.', 'two', 'to', 'two'],
+  ['The wind ______ the papers off the desk.', 'blue', 'blew', 'blew'],
+  ['The ______ rode into the castle on his horse.', 'knight', 'night', 'knight'],
+  ['She combed her long, curly ______.', 'hair', 'hare', 'hair'],
+  ['She polished the sculpture with soft ______.', 'wax', 'whacks', 'wax'],
+  ['Please ______ your name at the top of the page.', 'right', 'write', 'write'],
+  ['He ______ the piñata until it broke open.', 'wax', 'whacks', 'whacks'],
+  ['We’ll ______ at the park gate.', 'meat', 'meet', 'meet'],
+  ['She lost her ______ in the bright sun.', 'site', 'sight', 'sight'],
+  ['The ______ is shining brightly today.', 'sun', 'son', 'sun'],
+  ['Always turn ______ when you reach the stop sign.', 'right', 'write', 'right'],
+  ['The ______ flew through the sky above the mountains.', 'plain', 'plane', 'plane'],
+  ['We climbed to the top of the construction ______.', 'site', 'sight', 'site'],
+  ['The ______ was full of new packages.', 'mail', 'male', 'mail'],
+  ['They chose the fastest ______ to the museum.', 'route', 'root', 'route'],
+  ['I already ______ the answer to that question.', 'new', 'knew', 'knew'],
+  ['Have you ______ my missing sock anywhere?', 'scene', 'seen', 'seen'],
+  ['A squirrel fell into the garden ______.', 'hole', 'whole', 'hole'],
+  ['The sculpture is made entirely of ______.', 'medal', 'metal', 'metal'],
+  ['The ______ dog was much larger than the female one.', 'mail', 'male', 'male'],
+  ['He was not ______ to stay up past midnight.', 'allowed', 'aloud', 'allowed'],
+  ['The plant’s ______ grew deep into the soil.', 'route', 'root', 'root'],
+  ['She ate a juicy ______ for her snack.', 'pear', 'pair', 'pear'],
+  ['I’d like a small ______ of that chocolate cake.', 'peace', 'piece', 'piece'],
+  ['I bought a new ______ of shoes yesterday.', 'pear', 'pair', 'pair'],
+  ['We spotted a large ______ near the boat.', 'wail', 'whale', 'whale'],
+  ['The school ______ gave a speech at the assembly.', 'principal', 'principle', 'principal'],
+  ['We need more ______ to bake the cake.', 'flower', 'flour', 'flour'],
+  ['They tried to ______ their homemade cookies at the fair.', 'pedal', 'peddle', 'peddle'],
+  ['Always use the ______ when going downhill.', 'brake', 'break', 'brake'],
+  ['Please don’t ______ water by leaving the tap on.', 'waist', 'waste', 'waste'],
+  ['Let’s take a short ______ before continuing.', 'brake', 'break', 'break'],
+  ['Please put your shoes ______ the door.', 'buy', 'by', 'by'],
+  ['He gave a ______ explanation of how the machine works.', 'plain', 'plane', 'plain'],
+  ['I want to ______ a new backpack for school.', 'buy', 'by', 'buy'],
+  ['Her ______ started bleeding after the fall.', 'nose', 'knows', 'nose'],
+  ['She read the poem ______ to the class.', 'allowed', 'aloud', 'aloud'],
+  ['They want to ______ their old games online.', 'cell', 'sell', 'sell'],
+  ['He ______ the answer to every question.', 'nose', 'knows', 'knows'],
+  ['She walked across the field with ______ feet.', 'bare', 'bear', 'bare'],
+  ['The ______ was blocked by fallen trees.', 'rode', 'road', 'road'],
+  ['We need ______ talk about the trip.', 'to', 'two', 'to'],
+  ['He ______ his bike down the hill.', 'rode', 'road', 'rode'],
+  ['He wore a ______ pair of shoes to school.', 'new', 'knew', 'new'],
+  ['It was a cold and quiet ______.', 'knight', 'night', 'night'],
+  ['The child let out a loud ______ after falling.', 'wail', 'whale', 'wail'],
+  ['Always stand by your strongest ______.', 'principal', 'principle', 'principle'],
+  ['The prisoner was locked in a dark ______.', 'cell', 'sell', 'cell'],
+  ['A wild ______ ran across the field.', 'hair', 'hare', 'hare'],
+  ['He used his feet to push the bike’s ______.', 'pedal', 'peddle', 'pedal'],
+  ['The final ______ of the play was very emotional.', 'scene', 'seen', 'scene']];
+
+  let currentQuestion = 0;
+  let score = 0;
+  let attempted = 0;
+
+  const questionEl = document.getElementById("question");
+  const option1 = document.getElementById("option1");
+  const option2 = document.getElementById("option2");
+  const nextBtn = document.getElementById("next-btn");
+  const scoreDisplay = document.getElementById("score-display");
+  const progressBar = document.getElementById("progress-bar");
+  const completionEl = document.getElementById("completion");
+
+  function loadQuestion() {
+    resetButtons();
+    updateScore();
+    updateProgress();
+
+    if (currentQuestion >= quizData.length) {
+      questionEl.style.display = "none";
+      option1.style.display = "none";
+      option2.style.display = "none";
+      nextBtn.style.display = "none";
+      completionEl.style.display = "block";
+      return;
+    }
+
+    const [text, opt1, opt2, correct] = quizData[currentQuestion];
+    questionEl.textContent = `${currentQuestion + 1}. ${text}`;
+    option1.textContent = opt1;
+    option2.textContent = opt2;
+
+    option1.onclick = () => checkAnswer(opt1, correct, option1);
+    option2.onclick = () => checkAnswer(opt2, correct, option2);
+  }
+
+  function checkAnswer(selected, correct, button) {
+    attempted++;
+    if (selected === correct) {
+      score++;
+      button.classList.add("correct");
+    } else {
+      button.classList.add("wrong");
+    }
+    option1.disabled = true;
+    option2.disabled = true;
+    updateScore();
+  }
+
+  function resetButtons() {
+    option1.disabled = false;
+    option2.disabled = false;
+    option1.className = "option-btn";
+    option2.className = "option-btn";
+  }
+
+  function updateScore() {
+    scoreDisplay.textContent = `Score: ${score} / ${attempted}`;
+  }
+
+  function updateProgress() {
+    const percent = Math.floor((currentQuestion / quizData.length) * 100);
+    progressBar.style.width = percent + "%";
+  }
+
+  nextBtn.onclick = () => {
+    currentQuestion++;
+    loadQuestion();
+  };
+
+  loadQuestion();
+</script>
+
+</body>
+</html>

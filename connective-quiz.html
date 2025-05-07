@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Connective Quiz</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f8ff; margin: 0; padding: 0; }
+    #quiz-container { background: white; padding: 2rem; margin: 5vh auto; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.2); max-width: 700px; }
+    h2 { margin-bottom: 2rem; }
+    .option-btn { display: inline-block; margin: 1rem; padding: 1rem 2rem; font-size: 1.2rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; }
+    .correct { background-color: #4CAF50; color: white; }
+    .wrong { background-color: #f44336; color: white; }
+    #next-btn { margin-top: 2rem; padding: 0.8rem 2rem; font-size: 1rem; cursor: pointer; }
+    #completion { display: none; font-size: 1.5rem; color: green; margin-top: 20px; }
+    #score-display { font-size: 1rem; margin-bottom: 1rem; }
+    .progress-container { width: 100%; background-color: #ddd; border-radius: 20px; margin: 1rem 0; height: 20px; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background-color: #4CAF50; transition: width 0.4s ease; }
+  </style>
+</head>
+<body>
+
+<div id="quiz-container">
+  <div id="score-display">Score: 0 / 0</div>
+  <div class="progress-container"><div class="progress-bar" id="progress-bar"></div></div>
+  <h2 id="question">Loading...</h2>
+  <div><button id="option1" class="option-btn"></button><button id="option2" class="option-btn"></button></div>
+  <button id="next-btn">Next</button>
+  <div id="completion">🎉 Quiz Completed! Great job! 🎉</div>
+</div>
+
+<script>
+  const quizData = [['They arrived early, ______ the roads were empty.', 'because', 'and', 'because'],
+    ['She was tired ______ kept working.', 'but', 'because', 'but'],
+    ['He was late, ______ he missed the train.', 'but', 'so', 'so'],
+    ['She didn’t go to the park ______ it was raining.', 'and', 'because', 'because'],
+    ['She wore her boots, ______ it was snowing.', 'so', 'because', 'because'],
+    ['We didn’t go out, ______ we were too tired.', 'and', 'because', 'because'],
+    ['She laughed, ______ she heard a funny joke.', 'so', 'because', 'because'],
+    ['I like apples ______ oranges.', 'and', 'but', 'and'],
+    ['I love pizza ______ pasta.', 'but', 'and', 'and'],
+    ['He smiled, ______ he was happy.', 'because', 'but', 'because'],
+    ['He wanted ice cream, ______ he didn’t have money.', 'but', 'because', 'but'],
+    ['I want to help, ______ I need more time.', 'but', 'and', 'but'],
+    ['We missed the train ______ we were late.', 'because', 'so', 'because'],
+    ['He was nervous, ______ he forgot his lines.', 'so', 'and', 'so'],
+    ['She wanted to go, ______ she had too much work.', 'and', 'but', 'but'],
+    ['It rained all day, ______ we stayed indoors.', 'so', 'but', 'so'],
+    ['I read the book, ______ I liked the ending.', 'and', 'but', 'and'],
+    ['They ran quickly, ______ they didn’t win the race.', 'so', 'but', 'but'],
+    ['I cleaned my room, ______ I wanted to play.', 'because', 'so', 'because'],
+    ['He didn’t study, ______ he failed the test.', 'but', 'so', 'so'],
+    ['They stayed quiet ______ the teacher was talking.', 'and', 'because', 'because'],
+    ['The baby cried, ______ he was sleepy.', 'but', 'because', 'because'],
+    ['We went inside ______ it started raining.', 'because', 'and', 'because'],
+    ['I was cold, ______ I put on a sweater.', 'because', 'so', 'so'],
+    ['The cat hid, ______ it was scared.', 'so', 'because', 'because'],
+    ['We stayed home, ______ it was a holiday.', 'because', 'so', 'because'],
+    ['They practiced every day, ______ they got better.', 'but', 'so', 'so'],
+    ["She didn't win, ______ she tried her best.", 'but', 'and', 'but'],
+    ['He is kind ______ helpful.', 'so', 'and', 'and'],
+    ['He studied hard ______ passed the test.', 'and', 'because', 'and'],
+    ["I lost my book, ______ I couldn't do my homework.", 'so', 'because', 'so'],
+    ['We ran quickly, ______ we still missed the bus.', 'so', 'but', 'but'],
+    ['He played well, ______ he didn’t win.', 'but', 'so', 'but'],
+    ['We ate lunch early, ______ we were very hungry.', 'because', 'but', 'because'],
+    ['I wanted to go swimming, ______ I forgot my towel.', 'but', 'and', 'but'],
+    ['I wanted to help, ______ I didn’t know how.', 'because', 'but', 'but'],
+    ['She was tired, ______ she didn’t give up.', 'but', 'so', 'but'],
+    ['He was hungry, ______ he made a sandwich.', 'but', 'so', 'so'],
+    ['They didn’t like the movie, ______ they left early.', 'so', 'but', 'so'],
+    ['The dog barked ______ chased the cat.', 'and', 'because', 'and']];
+
+  let currentQuestion = 0, score = 0, attempted = 0;
+  const questionEl = document.getElementById("question"),
+        option1 = document.getElementById("option1"),
+        option2 = document.getElementById("option2"),
+        nextBtn = document.getElementById("next-btn"),
+        scoreDisplay = document.getElementById("score-display"),
+        progressBar = document.getElementById("progress-bar"),
+        completionEl = document.getElementById("completion");
+
+  function loadQuestion() {
+    resetButtons();
+    updateScore();
+    updateProgress();
+
+    if (currentQuestion >= quizData.length) {
+      questionEl.style.display = "none";
+      option1.style.display = "none";
+      option2.style.display = "none";
+      nextBtn.style.display = "none";
+      completionEl.style.display = "block";
+      return;
+    }
+
+    const [text, opt1, opt2, correct] = quizData[currentQuestion];
+    questionEl.textContent = `${currentQuestion + 1}. ${text}`;
+    option1.textContent = opt1;
+    option2.textContent = opt2;
+
+    option1.onclick = () => checkAnswer(opt1, correct, option1);
+    option2.onclick = () => checkAnswer(opt2, correct, option2);
+  }
+
+  function checkAnswer(selected, correct, button) {
+    attempted++;
+    if (selected === correct) { score++; button.classList.add("correct"); }
+    else { button.classList.add("wrong"); }
+    option1.disabled = true;
+    option2.disabled = true;
+    updateScore();
+  }
+
+  function resetButtons() {
+    option1.disabled = false;
+    option2.disabled = false;
+    option1.className = "option-btn";
+    option2.className = "option-btn";
+  }
+
+  function updateScore() { scoreDisplay.textContent = `Score: ${score} / ${attempted}`; }
+  function updateProgress() { progressBar.style.width = Math.floor((currentQuestion / quizData.length) * 100) + "%"; }
+  nextBtn.onclick = () => { currentQuestion++; loadQuestion(); };
+  loadQuestion();
+</script>
+</body>
+</html>
